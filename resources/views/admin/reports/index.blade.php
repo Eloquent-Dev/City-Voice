@@ -8,24 +8,21 @@
                 <p class="text-sm text-gray-500 mt-1">Generate and review frozen historical snapshots of system KPIs.</p>
             </div>
             @php
-                $latestReport = App\Models\AdminReport::latest()->first();
-                $canGenerate = !$latestReport || $latestReport->created_at->addDays(30)->isPast()
+$latestReport = App\Models\AdminReport::latest()->first();
+$canGenerate = !$latestReport || $latestReport->created_at->addDays(30)->isPast()
             @endphp
 
             @if($canGenerate)
-                <form action="{{ route('admin.reports.generate') }}" method="POST" onsubmit="return confirm('Are you sure? This will calculate the lasst 30 days of data and permanently save it as a new report.');">
-                    @csrf
-                    <button type="submit" class="bg-brand-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition shadow-md flex items-center gap-2 pointer">
+                    <button type="button" onclick="openGenerateModal(this)" id="generate-btn" class="bg-brand-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition shadow-md flex items-center gap-2 pointer">
                         Generate New 30-Day Snapshot Report
                     </button>
-                </form>
             @else
             @php
-                $daysLeft = now()->diffInDays($latestReport->created_at->addDays(30));
-                $displayDays = $daysLeft > 0 ? $daysLeft : 1;
+    $daysLeft = now()->diffInDays($latestReport->created_at->addDays(30));
+    $displayDays = $daysLeft > 0 ? $daysLeft : 1;
             @endphp
                 <button disabled class="bg-gray-100 border boder-gray-300 text-gray-400 px-6 py-2.5 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 cursor-not-allowed" title="Cooldown active across all Admins">
-                    Global Cooldown Active: Please wait {{ round($displayDays,0) }} more day(s) before generating a new report.
+                    Global Cooldown Active: Please wait {{ round($displayDays, 0) }} more day(s) before generating a new report.
                 </button>
             @endif
 
@@ -62,7 +59,7 @@
                                 <td class="p-4">
                                     <div class="flex items-center gap-2">
                                         <div class="w-6 h-6 rounded-full bg-brand-dark flex items-center justify-center text-white text-[10px] font-bold">
-                                            {{ strtoupper(substr($report->generator->user->name , 0, 1)) }}
+                                            {{ strtoupper(substr($report->generator->user->name, 0, 1)) }}
                                         </div>
                                         <span class="text-sm text-gray-700 font-medium">{{ $report->generator->user->name ?? 'Unknown' }}</span>
                                     </div>
@@ -77,7 +74,7 @@
                                             <i class="fa-solid fa-file-pdf"></i> Download PDF
                                         </a>
 
-                                        <a href="{{ route('admin.reports.show',$report->id) }}" class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-bold transition shadow-sm">
+                                        <a href="{{ route('admin.reports.show', $report->id) }}" class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-bold transition shadow-sm">
                                             View Details <i class="fa-solid fa-arrow-right text-xs"></i>
                                         </a>
                                     </div>
@@ -105,4 +102,73 @@
             @endif
         </div>
     </div>
+    <div id="generate-modal" class="fixed inset-0 z-50 hidden items-center justify-center  transition-opacity duration-200">
+        <div id="generate-modal-card" class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-200">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-yellow-100 mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-yellow-600 text-2xl"></i>
+                </div>
+
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Confirm Generation</h3>
+
+                <p class="text-sm text-gray-500 mb-6">
+                    Are you sure you want to generate this report <span id="generate-items-name" class="font-bold text-gray-900 px-1 py-0.5 bg-gray-100 rounded"></span>? This action can't be undone.
+                </p>
+
+                <div class="flex justify-center gap-3">
+                    <button type="button" onclick="closeGenerateModal()" class="px-5 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold rounded-xl transition duration-150 pointer">
+                        Cancel
+                    </button>
+                    <form action="{{ route('admin.reports.generate') }}" method="POST">
+                    @csrf
+                    <button type="submit" id="confirm-generate-btn" class="px-5 py-2.5 bg-yellow-600 text-white hover:bg-yellow-700 font-bold rounded-xl transition duration-150 shadow-sm shadow-yellow-200 pointer">
+                        Yes, Generate
+                    </button>
+                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let formToSubmitId = null;
+        function openGenerateModal(buttonElement) {
+            formToSubmitId = buttonElement.getAttribute('data-form-id');
+            const itemName = buttonElement.getAttribute('data-item-name');
+            document.getElementById('generate-items-name').innerText = itemName;
+
+            const modal = document.getElementById('generate-modal');
+            const modalCard = document.getElementById('generate-modal-card');
+
+            modal.classList.add('flex');
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                modalCard.classList.remove('scale-95');
+                modalCard.classList.add('scale-100');
+            }, 10);
+        }
+        function closeGenerateModal() {
+            const modal = document.getElementById('generate-modal');
+            const modalCard = document.getElementById('generate-modal-card');
+
+            modalCard.classList.remove('scale-100');
+            modalCard.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                formToSubmitId = null;
+            }, 200);
+        }
+        document.getElementById('confirm-generate-btn').addEventListener('click', function () {
+            if (formToSubmitId) {
+                document.getElementById(formToSubmitId).submit();
+            }
+        });
+        document.getElementById('generate-modal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeGenerateModal();
+            }
+        });
+    </script>
 </x-layout>
