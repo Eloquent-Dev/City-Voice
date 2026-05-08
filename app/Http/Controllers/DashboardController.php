@@ -14,6 +14,11 @@ class DashboardController extends Controller
             'total'=> $complaints->count(),
             'pending'=> $complaints->where('status','pending')->count(),
             'resolved' => $complaints->whereIn('status',['resolved','approved'])->count(),
+            'approved' => $complaints->where('status','approved')->count(),
+            'in_progress' => $complaints->where('status','in_progress')->count(),
+            'under_review' => $complaints->where('status','under_review')->count(),
+            'reopened' => $complaints->where('status','reopened')->count(),
+            'rejected' => $complaints->where('status','rejected')->count(),
             ];
         $groupedComplaints = $complaints->groupBy('status');
         $chartLabels =[];

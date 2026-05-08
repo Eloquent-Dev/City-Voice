@@ -20,7 +20,7 @@
         </div>
 
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div
                 class="bg-white rounded-xl p-6 border-l-4 border-brand-blue shadow-sm flex items-center justify-between">
                 <div>
@@ -32,23 +32,73 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl p-6 border-l-4 border-red-500 shadow-sm flex items-center justify-between">
+            <div class="bg-white rounded-xl p-6 border-l-4 border-yellow-500 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Awaiting Action</p>
                     <h3 class="text-3xl font-black text-gray-800">{{ $stats['pending'] }}</h3>
                 </div>
-                <div class="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center text-red-500 text-xl">
+                <div class="bg-yellow-50 w-12 h-12 rounded-full flex items-center justify-center text-yellow-500 text-xl">
+                    <i class="fa-solid fa-hourglass-start"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white rounded-xl p-6 border-l-4 border-blue-500 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Currently In Progress</p>
+                    <h3 class="text-3xl font-black text-gray-800">{{ $stats['in_progress'] }}</h3>
+                </div>
+                <div class="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center text-blue-500 text-xl">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white rounded-xl p-6 border-l-4 border-purple-500 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Under Review</p>
+                    <h3 class="text-3xl font-black text-gray-800">{{ $stats['under_review'] }}</h3>
+                </div>
+                <div class="bg-purple-50 w-12 h-12 rounded-full flex items-center justify-center text-purple-500 text-xl">
                     <i class="fa-solid fa-clock"></i>
                 </div>
             </div>
             <div
-                class="bg-white rounded-xl p-6 border-l-4 border-green-500 shadow-sm flex items-center justify-between">
+                class="bg-white rounded-xl p-6 border-l-4 border-green-400 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Successfully Approved</p>
+                    <h3 class="text-3xl font-black text-gray-800">{{ $stats['approved'] }}</h3>
+                </div>
+                <div class="bg-green-50 w-12 h-12 rounded-full flex items-center justify-center text-green-500 text-xl">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white rounded-xl p-6 border-l-4 border-emerald-400 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Successfully Resolved</p>
                     <h3 class="text-3xl font-black text-gray-800">{{ $stats['resolved'] }}</h3>
                 </div>
-                <div class="bg-green-50 w-12 h-12 rounded-full flex items-center justify-center text-green-500 text-xl">
+                <div class="bg-emerald-50 w-12 h-12 rounded-full flex items-center justify-center text-emerald-500 text-xl">
                     <i class="fa-solid fa-check-double"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white rounded-xl p-6 border-l-4 border-red-500 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Rejected</p>
+                    <h3 class="text-3xl font-black text-gray-800">{{ $stats['rejected'] }}</h3>
+                </div>
+                <div class="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center text-red-500 text-xl">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white rounded-xl p-6 border-l-4 border-orange-400 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Reopened</p>
+                    <h3 class="text-3xl font-black text-gray-800">{{ $stats['reopened'] }}</h3>
+                </div>
+                <div class="bg-orange-50 w-12 h-12 rounded-full flex items-center justify-center text-orange-500 text-xl">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
                 </div>
             </div>
         </div>
