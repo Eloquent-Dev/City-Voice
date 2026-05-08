@@ -75,7 +75,7 @@ class ReportController extends Controller
             'generated_by' => auth()->user()->employee->id
         ]);
 
-        return redirect()->route('admin.reports.show',$report->id)->with('success','New KPI Report generated successfully!');
+        return redirect()->route('admin.reports.index')->with('success','New KPI Report generated successfully!');
     }
 
     public function show(AdminReport $report){
