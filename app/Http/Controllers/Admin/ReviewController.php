@@ -45,7 +45,7 @@ class ReviewController extends Controller
         switch($decision){
             case 'approve':
 
-                $jobOrder->update(['status'=>'approved']);
+                $jobOrder->update(['status'=>'completed']);
                 $jobOrder->complaint->update([
                     'status' => 'approved',
                     'approved_at' => now(),
