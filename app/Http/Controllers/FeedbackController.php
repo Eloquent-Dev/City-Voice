@@ -42,7 +42,10 @@ class FeedbackController extends Controller
             }
         }
         else{
-            $complaint->update(['status' => 'resolved']);
+            $complaint->update([
+                'status' => 'resolved',
+                'resolved_at' => now(),
+                ]);
 
             $complaint->user->notify(new complaintStatusUpdated($complaint));
         }
