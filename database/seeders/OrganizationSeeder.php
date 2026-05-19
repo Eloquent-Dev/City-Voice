@@ -101,7 +101,6 @@ class OrganizationSeeder extends Seeder
                     ['name' => 'شكوى على تغيير صفة الاستعمال لجزء من بناء مهني','allowance_period'=>30],
                     ['name' => 'شكوى على تغيير صفة الاستعمال لجزء من بناء صحي','allowance_period'=>30],
                     ['name' => 'شكوى على حفرية بنية تحتية','allowance_period'=>3],
-                    ['name' => 'إزالة بسطات','allowance_period'=>3],
                     ['name' => 'شكاوي ابنية / منشآت مخالفة','allowance_period'=>30],
                     ['name' => 'حواجز اسمنتية و حديدية/ عوائق','allowance_period'=>7],
                     ['name' => 'إزالة مطبات اسمنتية عشوائية','allowance_period'=>7],
