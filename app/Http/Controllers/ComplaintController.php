@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\JobOrder;
 use Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class ComplaintController extends Controller
 {
@@ -39,7 +40,20 @@ class ComplaintController extends Controller
 
     public function store(Request $request){
         $rules = [
-            'title' => 'required|string|max:255',
+            'title' => ['required'
+            ,'string'
+            ,'max:255',
+            function($attribute, $value,$fail) use ($request){
+                $duplicateExists = Complaint::where('title', $value)
+                ->where('category_id', $request->input('category_id'))
+                ->whereIn('status', ['pending', 'in_progress'])
+                ->exists();
+
+                if($duplicateExists){
+                    $fail('Similar active complaint has been found. Please use a more specific title.');
+                }
+            }
+            ],
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string',
             'latitude' => 'required|string',
