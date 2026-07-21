@@ -64,6 +64,9 @@ class CategoryController extends Controller
 
     public function destroy(Category $category, CategoryService $service)
     {
+        if ($category->complaints()->exists()) {
+        return back()->with('error', 'Cannot delete this category because there are complaints assigned to it. Please reassign or resolve them first.');
+    }
         $service->deleteCategory($category);
 
         return redirect()->route('admin.categories.index')
