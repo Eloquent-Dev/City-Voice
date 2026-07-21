@@ -34,7 +34,7 @@ class storeJobRequest extends FormRequest
             'supervisor_ids.required' => 'You must select at least one supervisor',
             'supervisor_ids.*.exists' => 'One of the selected supervisors does not exist in our records.',
             'worker_ids.required' => 'You must select at least one worker',
-            'worker_ids.min' => 'Please assing at least one :min worker to this job.'
+            'worker_ids.min' => 'Please assign at least one worker to this job.'
         ];
     }
 }

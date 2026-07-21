@@ -24,3 +24,5 @@ yarn-error.log
 /storage/debugbar
 zsh.exe.stackdump
 commit_history.doc
+commit_log.doc
+log.doc

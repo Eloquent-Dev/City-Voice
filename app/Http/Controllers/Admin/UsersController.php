@@ -7,161 +7,111 @@ use App\Models\Complaint;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Division;
-use App\Models\Employee;
 use App\Models\Category;
-use App\Notifications\complaintStatusUpdated;
+use App\Http\Requests\UpdateUserRoleRequest;
+use App\Http\Requests\UpdateUserDivisionRequest;
+use App\Http\Requests\UpdateComplaintDetailsRequest;
+use App\Services\AdminUserService;
+use Exception;
 
 class UsersController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $query = User::with('employee');
 
-        if($request->filled('search')){
+        if ($request->filled('search')) {
             $searchTerm = '%' . $request->search . '%';
-            $query->where(function($q) use ($searchTerm){
+            $query->where(function($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
-                ->orWhere('email', 'like',$searchTerm)
-                ->orWhere('national_no', 'like', $searchTerm);
+                  ->orWhere('email', 'like', $searchTerm)
+                  ->orWhere('national_no', 'like', $searchTerm);
             });
         }
 
-        if($request->filled('role')) $query->where('role', $request->role);
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
 
-        $users = $query->orderBy('created_at','asc')->paginate(15)->withQueryString();
+        $users = $query->orderBy('created_at', 'asc')->paginate(15)->withQueryString();
 
         $stats = [
             'total' => User::count(),
-            'admins' => User::where('role','admin')->count(),
-            'dispatchers' => User::where('role','dispatcher')->count(),
-            'supervisors' => User::where('role','supervisor')->count(),
-            'workers' => User::where('role','worker')->count(),
-            'citizens' => User::where('role','citizen')->count()
+            'admins' => User::where('role', 'admin')->count(),
+            'dispatchers' => User::where('role', 'dispatcher')->count(),
+            'supervisors' => User::where('role', 'supervisor')->count(),
+            'workers' => User::where('role', 'worker')->count(),
+            'citizens' => User::where('role', 'citizen')->count()
         ];
 
         $divisions = Division::orderBy('name')->get();
 
-        return view('admin.users.index', compact('users','stats','divisions'));
+        return view('admin.users.index', compact('users', 'stats', 'divisions'));
     }
 
-    public function updateRole(Request $request,User $user){
-        if($user->id === auth()->id()){
-            return back()->with('error','Critical Error: You can\'t demote your own Admin account.');
+    public function updateRole(UpdateUserRoleRequest $request, User $user, AdminUserService $service)
+    {
+        try {
+            $message = $service->updateUserRole($user, $request->validated('role'), auth()->id());
+            return back()->with('success', $message);
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $validated = $request->validate([
-            'role' => 'required|in:admin,supervisor,worker,dispatcher,citizen'
-        ]);
-
-        $oldRole = $user->role;
-        $newRole = $validated['role'];
-        if($oldRole === 'citizen'){
-            Employee::firstOrCreate([
-                'user_id' => $user->id
-            ]);
-        }else if( in_array($oldRole,['dispatcher','admin','supervisor','worker']) && $newRole === 'citizen'){
-            $user->employee()->delete();
-        }
-        $user->update(['role' => $newRole]);
-
-        return back()->with('success',"{$user->name}'s role has been updated from {$oldRole} to {$validated['role']}.");
     }
 
-    public function updateDivision(Request $request,User $user){
-        if(!in_array($user->role,['dispatcher','worker','supervisor','admin'])){
-            return redirect()->route('admin.users.index')->with('error','Divisions can only be assigned to employees');
+    public function updateDivision(UpdateUserDivisionRequest $request, User $user, AdminUserService $service)
+    {
+        try {
+            $message = $service->updateUserDivision($user, $request->validated('division_id'));
+            return redirect()->route('admin.users.index')->with('success', $message);
+        } catch (Exception $e) {
+            return redirect()->route('admin.users.index')->with('error', $e->getMessage());
         }
-
-        $validated = $request->validate([
-            'division_id' => 'nullable|exists:divisions,id'
-        ]);
-
-        $divisionId = $validated['division_id'] ?? null;
-
-        $user->employee()->update(['division_id' => $divisionId]);
-
-        if($divisionId){
-            $divisionName = Division::find($divisionId)->name;
-            $message = "{$user->name} has been successfully assigned to: {$divisionName}.";
-        }else{
-            $message = "{$user->name} has been successfully unassigned from all divisions.";
-        }
-
-        return redirect()->route('admin.users.index')->with('success',$message);
     }
 
-    public function complaints(User $user){
-        if($user->complaint()->count() > 0){
-            $categories = Category::all();
-        }else{
-            $categories = [];
-        }
+    public function complaints(User $user)
+    {
+        $categories = $user->complaint()->exists() ? Category::all() : [];
         $complaints = $user->complaint()->orderBy('id', 'asc')->paginate(15);
 
-        return view('admin.users.complaints.index',compact('user','complaints','categories'));
+        return view('admin.users.complaints.index', compact('user', 'complaints', 'categories'));
     }
 
-    public function showComplaint(Complaint $complaint){
+    public function showComplaint(Complaint $complaint)
+    {
         $complaint->load([
-            'user',
-            'category',
-            'approvedBy.user',
-            'rejectedBy.user',
-            'resolvedBy.user',
-            'jobOrders.assignedBy.user',
-            'jobOrders.workers.user',
-            'jobOrders.completionReport.reportedBy.user',
+            'user', 'category', 'approvedBy.user', 'rejectedBy.user',
+            'resolvedBy.user', 'jobOrders.assignedBy.user',
+            'jobOrders.workers.user', 'jobOrders.completionReport.reportedBy.user',
             'feedback'
         ]);
-        session()->put('complaint_id', $complaint->id);
+
+        // Note: session()->put('complaint_id', $complaint->id) has been removed for API compatibility!
 
         return view('admin.users.complaints.show', compact('complaint'));
     }
 
-    public function showProfile(User $user,Complaint $complaint){
+    public function showProfile(User $user, Complaint $complaint)
+    {
         $user->load('employee.division');
 
-        return view('admin.users.profile.show', compact('user','complaint'));
+        return view('admin.users.profile.show', compact('user', 'complaint'));
     }
 
-    public function updateDetails(Request $request, Complaint $complaint){
-
-        $validated = $request->validate([
-            'category_id' => 'nullable|exists:categories,id',
-            'status' => 'required|in:pending,under_review,approved,reopened,in_progress,resolved,rejected'
-        ]);
-
-        $oldStatus = $complaint->status;
-
-        $complaint->update([
-            'category_id' => $validated['category_id'],
-            'status' => $validated['status']
-        ]);
-
-        if($oldStatus !== $validated['status']){
-            $complaint->user->notify(new complaintStatusUpdated($complaint));
-        }
+    public function updateDetails(UpdateComplaintDetailsRequest $request, Complaint $complaint, AdminUserService $service)
+    {
+        $service->updateComplaintDetails($complaint, $request->validated());
 
         return back()->with('success', 'Complaint Details Updated Successfully.');
     }
 
-    public function destroy(User $user){
-        if($user->id === auth()->id()){
-            return back()->with('error','Critical Error: You can\'t delete your own Admin account.');
+    public function destroy(User $user, AdminUserService $service)
+    {
+        try {
+            $message = $service->deleteUser($user, auth()->id());
+            return back()->with('success', $message);
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-        if($user->role === 'admin'){
-        return back()->with('error','Security Error: You cannot delete another Admin account.');
-        }
-        if($user->employee()->exists()){
-            if($user->employee->assignedJobOrders()->count() > 0){
-                return back()->with('error','Can\'t delete user: This employee has active or historical job orders assigned to them.');
-            }
-
-            $user->employee()->delete();
-        }
-
-        $userName = $user->name;
-        $user->delete();
-
-        return back()->with('success', "User {$userName} has been permanently deleted from the system.");
     }
 }
