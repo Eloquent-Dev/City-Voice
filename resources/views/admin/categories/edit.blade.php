@@ -30,7 +30,7 @@
 
                 </div>
                 <div class="mb-6">
-                    <label for="allowance_period" class="b;ock text-sm fontfont-bold text-gray-700 mb-2">Allowance
+                    <label for="allowance_period" class="block text-sm font-bold text-gray-700 mb-2">Allowance
                         Period (In Days)</label>
                     <input type="number" name="allowance_period" id="allowance_period min="1"
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-brand-blue focus:border-brand-blue transition outline-none shadow-sm"
@@ -46,7 +46,7 @@
                     <label for="division_id" class="block text-sm font-bold text-gray-700 mb-2">Assign to
                         Division</label>
                     <select name="division_id" id="division_id"
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-brand-blue focus:border-brand-blue transition outline-nonr shadow-sm cursor-pointer bg-white">
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-brand-blue focus:border-brand-blue transition outline-none shadow-sm cursor-pointer bg-white">
                         <option value="" disabled>Select Responible Division...</option>
                         @foreach ($divisions as $division)
                             <option value=" {{ $division->id }}"
@@ -69,7 +69,7 @@
             </a>
             <button type="submit"
                 class="bg-brand-blue hover:bg-blue-800 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-save"> Update Category</i>
+                <i class="fa-solid fa-save"></i>Update Category
             </button>
         </div>
         </form>
